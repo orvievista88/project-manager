@@ -28,7 +28,7 @@ Route::middleware('auth')->group(function () {
         return view('profile');
     })->name('profile');
 
-    // Projects (Consolidated)
+    // Projects
     Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
     Route::get('/projects/create', [ProjectController::class, 'create'])->name('projects.create');
     Route::post('/projects', [ProjectController::class, 'store'])->name('projects.store');
@@ -42,12 +42,18 @@ Route::middleware('auth')->group(function () {
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
-    // Tasks (Requirement 4: Task Management)
+    // Tasks 
     Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
     Route::post('/tasks', [TaskController::class, 'store'])->name('tasks.store');
     Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
     Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+
+
+    Route::middleware('auth')->group(function () {
+        Route::get('/profile', [UserController::class, 'profile'])->name('profile');
+        Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
+    });
 
     // Logout
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');

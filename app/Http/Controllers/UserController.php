@@ -78,4 +78,27 @@ class UserController extends Controller
 		$user->delete();
 		return response()->json(['success' => 'User deleted successfully.']);
 	}
+
+	public function profile()
+	{
+		// Points to resources/views/pages/profile.blade.php
+		return view('pages.profile');
+	}
+
+	public function updateProfile(Request $request)
+	{
+		$user = auth()->user();
+
+		$user->name = $request->name;
+		$user->email = $request->email;
+
+		// Only update password if a new one is provided
+		if ($request->filled('password')) {
+			$user->password = bcrypt($request->password);
+		}
+
+		$user->save();
+
+		return back()->with('success', 'Profile updated!');
+	}
 }

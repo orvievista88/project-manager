@@ -3,33 +3,50 @@
 @section('content')
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Projects</h1>
-        <button class="btn btn-primary" id="createProjectBtn">Create New Project</button>
+        <div>
+            <h1 class="fw-bold">Projects</h1>
+            <p class="text-muted">Overview of all active workstreams.</p>
+        </div>
+        <button class="btn btn-primary px-4" id="createProjectBtn">
+            <i class="fas fa-plus me-2"></i>Create New Project
+        </button>
     </div>
 
-    <div class="card shadow-sm">
+    <div class="card shadow-sm border-0">
         <div class="card-body p-0">
-            <table class="table table-hover mb-0" id="projectsTable">
-                <thead class="table-light">
+            <table class="table table-hover align-middle mb-0" id="projectsTable">
+                <thead class="bg-light">
                     <tr>
-                        <th>Title</th>
+                        <th class="ps-4">Title</th>
+                        <th>Owner</th>
                         <th>Description</th>
                         <th>Deadline</th>
-                        <th class="text-end px-4">Actions</th>
+                        <th class="text-end pe-4">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($projects as $project)
                     <tr id="project-{{ $project->id }}">
-                        <td><strong>{{ $project->title }}</strong></td>
-                        <td class="text-muted">{{ Str::limit($project->description, 50) }}</td>
+                        <td class="ps-4"><strong>{{ $project->title }}</strong></td>
                         <td>
-                            {{-- Formatting date for display --}}
-                            {{ $project->deadline ? \Carbon\Carbon::parse($project->deadline)->format('M d, Y') : 'No Deadline' }}
+                            <span class="badge bg-light text-dark border">
+                                <i class="fas fa-user-circle me-1"></i>
+                                {{ $project->user->name ?? 'System' }}
+                            </span>
                         </td>
-                        <td class="text-end px-4">
-                            <button class="btn btn-sm btn-outline-warning editProjectBtn" data-id="{{ $project->id }}">Edit</button>
-                            <button class="btn btn-sm btn-outline-danger deleteProjectBtn" data-id="{{ $project->id }}">Delete</button>
+                        <td class="text-muted small">{{ Str::limit($project->description, 50) }}</td>
+                        <td>
+                            <span class="text-{{ \Carbon\Carbon::parse($project->deadline)->isPast() ? 'danger' : 'dark' }}">
+                                {{ $project->deadline ? \Carbon\Carbon::parse($project->deadline)->format('M d, Y') : 'No Deadline' }}
+                            </span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <button class="btn btn-sm btn-outline-primary editProjectBtn" data-id="{{ $project->id }}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger deleteProjectBtn" data-id="{{ $project->id }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </td>
                     </tr>
                     @endforeach
@@ -39,7 +56,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="projectModal" tabindex="-1" aria-labelledby="projectModalLabel" aria-hidden="true">
+<div class="modal fade" id="projectModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -49,22 +66,37 @@
             <div class="modal-body">
                 <form id="projectForm">
                     @csrf
+                    <input type="hidden" id="projectId" name="projectId">
+                    
                     <div class="mb-3">
-                        <label for="title" class="form-label">Project Title</label>
-                        <input type="text" class="form-control" id="title" name="title" placeholder="Enter project title" required>
+                        <label class="form-label fw-bold">Project Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
                     </div>
+
+                    @if(auth()->user()->role_id == '1')
                     <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Describe the project..." required></textarea>
+                        <label class="form-label fw-bold text-primary">Assign Owner (Admin Only)</label>
+                        <select class="form-select border-primary" name="user_id" id="user_id">
+                            <option value="">-- Assign to self --</option>
+                            @foreach($users as $u)
+                                <option value="{{ $u->id }}">{{ $u->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
+                    @endif
+
                     <div class="mb-3">
-                        <label for="deadline" class="form-label">Deadline</label>
+                        <label class="form-label fw-bold">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Deadline</label>
                         <input type="date" class="form-control" id="deadline" name="deadline" required>
                     </div>
-                    <input type="hidden" id="projectId">
                     
                     <div class="modal-footer px-0 pb-0">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary" id="saveBtn">Save Project</button>
                     </div>
                 </form>
@@ -74,17 +106,12 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
-    // 1. Global AJAX Setup for CSRF
     $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
+        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
     });
 
-    // 2. Open modal for CREATE
+    // CREATE
     $('#createProjectBtn').click(function() {
         $('#projectForm')[0].reset();
         $('#projectId').val('');
@@ -92,75 +119,54 @@
         $('#projectModal').modal('show');
     });
 
-    // 3. Open modal for EDIT
+    // EDIT
     $(document).on('click', '.editProjectBtn', function() {
-        let projectId = $(this).data('id');
-        $('#saveBtn').text('Updating...').prop('disabled', true);
-
-        $.get(`/projects/${projectId}/edit`, function(data) {
+        let id = $(this).data('id');
+        $.get(`/projects/${id}/edit`, function(data) {
+            $('#projectId').val(data.id);
             $('#title').val(data.title);
             $('#description').val(data.description);
-            
-            // Populate date (ensure format is YYYY-MM-DD)
-            if(data.deadline) {
-                let dateOnly = data.deadline.split(' ')[0];
-                $('#deadline').val(dateOnly);
+            $('#deadline').val(data.deadline);
+
+            // Populate user dropdown if it exists (Admins)
+            if ($('#user_id').length) {
+                $('#user_id').val(data.user_id);
             }
 
-            $('#projectId').val(data.id);
             $('#projectModalLabel').text('Edit Project');
-            $('#saveBtn').text('Save Changes').prop('disabled', false);
             $('#projectModal').modal('show');
-        }).fail(function() {
-            alert("Could not fetch project data.");
-            $('#saveBtn').prop('disabled', false);
         });
     });
 
-    // 4. Submit Create/Update via AJAX
-    $('#projectForm').submit(function(event) {
-        event.preventDefault();
-        
-        let projectId = $('#projectId').val();
-        let url = projectId ? `/projects/${projectId}` : '/projects';
-        let method = projectId ? 'PUT' : 'POST';
-        let formData = $(this).serialize();
+    // SUBMIT (Save/Update)
+    $('#projectForm').submit(function(e) {
+        e.preventDefault();
+        let id = $('#projectId').val();
+        let url = id ? `/projects/${id}` : '/projects';
+        let method = id ? 'PUT' : 'POST';
 
         $.ajax({
             url: url,
             method: method,
-            data: formData,
-            success: function(response) {
-                $('#projectModal').modal('hide');
-                // Use a toast or location reload
-                location.reload(); 
+            data: $(this).serialize(),
+            success: function() {
+                location.reload();
             },
             error: function(xhr) {
-                let errors = xhr.responseJSON?.errors;
-                if (errors) {
-                    alert(Object.values(errors).flat().join('\n'));
-                } else {
-                    alert('An error occurred. Please try again.');
-                }
+                alert("Error: " + (xhr.responseJSON?.message || "Check your input"));
             }
         });
     });
 
-    // 5. Soft DELETE project
+    // DELETE
     $(document).on('click', '.deleteProjectBtn', function() {
-        let projectId = $(this).data('id');
-
-        if (confirm('Are you sure you want to delete this project?')) {
+        if (confirm('Delete this project and all its tasks?')) {
+            let id = $(this).data('id');
             $.ajax({
-                url: `/projects/${projectId}`,
+                url: `/projects/${id}`,
                 method: 'DELETE',
-                success: function(response) {
-                    $(`#project-${projectId}`).fadeOut(300, function() {
-                        $(this).remove();
-                    });
-                },
-                error: function(xhr) {
-                    alert('Error: ' + xhr.statusText);
+                success: function() {
+                    $(`#project-${id}`).fadeOut();
                 }
             });
         }

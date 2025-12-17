@@ -5,7 +5,7 @@
 	<div class="d-flex justify-content-between align-items-center mb-4">
 		<div>
 			<h1 class="fw-bold">Tasks</h1>
-			<p class="text-muted">Manage your project milestones and tracking.</p>
+			<p class="text-muted">Manage milestones and track progress.</p>
 		</div>
 		<button class="btn btn-primary px-4" id="createTaskBtn">
 			<i class="fas fa-plus me-2"></i>Create New Task
@@ -19,6 +19,7 @@
 					<tr>
 						<th class="ps-4">Task Title</th>
 						<th>Project</th>
+						<th>Assigned To</th>
 						<th>Status</th>
 						<th>Progress</th>
 						<th>Due Date</th>
@@ -31,6 +32,14 @@
 						<td class="ps-4"><strong>{{ $task->title }}</strong></td>
 						<td><span class="text-muted">{{ $task->project->title ?? 'N/A' }}</span></td>
 						<td>
+							<div class="d-flex align-items-center">
+								<div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px; font-size: 10px;">
+									{{ strtoupper(substr($task->user->name ?? 'U', 0, 1)) }}
+								</div>
+								<span class="small">{{ $task->user->name ?? 'Unassigned' }}</span>
+							</div>
+						</td>
+						<td>
 							@php
 							$badgeClass = [
 							'todo' => 'bg-secondary',
@@ -42,12 +51,11 @@
 							@endphp
 							<span class="badge {{ $badgeClass }}">{{ $statusLabel }}</span>
 						</td>
-						<td style="min-width: 150px;">
+						<td style="min-width: 120px;">
 							<div class="d-flex align-items-center">
-								<div class="progress flex-grow-1" style="height: 8px;">
+								<div class="progress flex-grow-1" style="height: 6px;">
 									<div class="progress-bar bg-info" role="progressbar"
-										style="width: {{ $task->progress }}%"
-										aria-valuenow="{{ $task->progress }}" aria-valuemin="0" aria-valuemax="100">
+										style="width: {{ $task->progress }}%">
 									</div>
 								</div>
 								<span class="ms-2 small fw-bold">{{ $task->progress }}%</span>
@@ -92,9 +100,21 @@
 						</select>
 					</div>
 
+					@if(auth()->user()->role_id == '1')
+					<div class="mb-3">
+						<label class="form-label fw-bold text-primary">Assign To User (Admin Only)</label>
+						<select class="form-select border-primary" name="user_id" id="user_id">
+							<option value="">-- Assign to self --</option>
+							@foreach($users as $u)
+							<option value="{{ $u->id }}">{{ $u->name }}</option>
+							@endforeach
+						</select>
+					</div>
+					@endif
+
 					<div class="mb-3">
 						<label class="form-label fw-bold">Task Title</label>
-						<input type="text" class="form-control" name="title" id="title" placeholder="What needs to be done?" required>
+						<input type="text" class="form-control" name="title" id="title" required>
 					</div>
 
 					<div class="row">
@@ -119,7 +139,7 @@
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-					<button type="submit" class="btn btn-primary" id="saveBtn">Save Changes</button>
+					<button type="submit" class="btn btn-primary" id="saveBtn">Save Task</button>
 				</div>
 			</form>
 		</div>
@@ -134,7 +154,7 @@
 		}
 	});
 
-	// OPEN CREATE MODAL
+	// OPEN CREATE
 	$('#createTaskBtn').click(function() {
 		$('#taskForm')[0].reset();
 		$('#taskId').val('');
@@ -142,7 +162,7 @@
 		$('#taskModal').modal('show');
 	});
 
-	// OPEN EDIT MODAL
+	// OPEN EDIT
 	$(document).on('click', '.editTaskBtn', function() {
 		let id = $(this).data('id');
 		$.get(`/tasks/${id}/edit`, function(data) {
@@ -151,28 +171,27 @@
 			$('#title').val(data.title);
 			$('#status').val(data.status);
 			$('#progress').val(data.progress);
-
-			// Fixed: Use the formatted date from controller (YYYY-MM-DD)
 			$('#due_date').val(data.formatted_due_date || data.due_date.split('T')[0]);
+
+			// Populate user_id if dropdown exists (for admin)
+			if ($('#user_id').length) {
+				$('#user_id').val(data.user_id);
+			}
 
 			$('#taskModalLabel').text('Edit Task');
 			$('#taskModal').modal('show');
 		});
 	});
 
-	// AUTO-SYNC STATUS WITH PROGRESS
+	// AUTO-STATUS
 	$('#progress').on('input', function() {
 		let val = $(this).val();
-		if (val >= 100) {
-			$('#status').val('done');
-		} else if (val > 0) {
-			$('#status').val('in_progress');
-		} else {
-			$('#status').val('todo');
-		}
+		if (val >= 100) $('#status').val('done');
+		else if (val > 0) $('#status').val('in_progress');
+		else $('#status').val('todo');
 	});
 
-	// SAVE TASK (STORE OR UPDATE)
+	// SAVE
 	$('#taskForm').submit(function(e) {
 		e.preventDefault();
 		let id = $('#taskId').val();
@@ -183,7 +202,7 @@
 			url: url,
 			method: method,
 			data: $(this).serialize(),
-			success: function(response) {
+			success: function() {
 				location.reload();
 			},
 			error: function(xhr) {
@@ -192,17 +211,15 @@
 		});
 	});
 
-	// DELETE TASK
+	// DELETE
 	$(document).on('click', '.deleteTaskBtn', function() {
-		if (confirm('Are you sure you want to delete this task?')) {
+		if (confirm('Delete this task?')) {
 			let id = $(this).data('id');
 			$.ajax({
 				url: `/tasks/${id}`,
 				method: 'DELETE',
 				success: function() {
-					$(`#task-${id}`).fadeOut(300, function() {
-						$(this).remove();
-					});
+					$(`#task-${id}`).fadeOut();
 				}
 			});
 		}

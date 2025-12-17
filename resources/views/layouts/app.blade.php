@@ -118,9 +118,9 @@
             <nav class="nav flex-column">
                 <a href="{{ route('dashboard') }}">Home</a>
                 <a href="{{ route('profile') }}">Profile</a>
-                @if(auth()->user()->role === 'admin')
-                <a class="nav-link {{ request()->routeIs('users.index') ? 'active fw-bold' : '' }}" href="{{ route('users.index') }}">
-                    <i class="fas fa-users-cog me-2"></i> Manage Users
+                @if(auth()->user()->role_id == '1')
+                <a class="nav-link" href="{{ route('users.index') }}">
+                    Manage Users
                 </a>
                 @endif
                 <a href="{{ route('projects.index') }}">Projects</a>
