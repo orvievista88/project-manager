@@ -62,28 +62,44 @@ All responses are formatted via **Eloquent Resources** to provide clean JSON and
 
 ---
 
-## 🛠 Installation & Setup
+# Project Manager - Laravel Implementation
 
-1.  **Initialize Environment:**
-    ```bash
-    cp .env.example .env
-    composer install
-    ```
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-2.  **Configure Session Driver:**
-    To avoid `sessions` table queries in your MySQL logs, set the driver to `file` in `.env`:
-    ```env
-    SESSION_DRIVER=file
-    DB_DATABASE=your_db_name
-    ```
-
-3.  **Database & Routing:**
-    ```bash
-    php artisan migrate --seed
-    php artisan route:clear
-    ```
+## 🚀 Project Overview
+A Project Management System built with **Laravel 11**. This application manages the relationship between Users and Projects, utilizing a custom Bootstrap frontend for user onboarding and a hardened RESTful API for data management.
 
 ---
+
+## 🛠 Setup & Installation Instructions
+
+To get the application running on your local machine, follow these consolidated steps to initialize the environment, database, and assets:
+
+### 1. Project Initialization & Environment Setup
+Execute the following commands in order to install dependencies and configure your system:
+
+```bash
+# Clone the repository and install PHP dependencies
+git clone <your-repo-url>
+cd project-manager
+composer install
+
+# Configure environment and generate app key
+cp .env.example .env
+php artisan key:generate
+
+# IMPORTANT: Update your .env file before proceeding:
+# 1. Set DB_DATABASE to your local database name
+# 2. Set SESSION_DRIVER=file (to avoid session table queries in logs)
+
+# Run database migrations, seed roles, and compile frontend assets
+php artisan migrate --seed
+npm install && npm run dev
+
+# Clear caches and launch the local development server
+php artisan route:clear
+php artisan config:clear
+php artisan serve
 
 ## License
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
