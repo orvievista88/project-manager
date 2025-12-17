@@ -120,7 +120,7 @@
                 <a href="{{ route('profile') }}">Profile</a>
                 <a href="{{ route('users.index') }}">Manage Users</a>
                 <a href="{{ route('projects.index') }}">Projects</a>
-                <a href="{{ route('tasks') }}">Tasks</a>
+                <a href="{{ route('tasks.index') }}">Tasks</a>
                 <form action="{{ route('logout') }}" method="POST" class="mt-2 px-3">
                     @csrf
                     <button type="submit" class="btn btn-danger btn-sm w-100">Logout</button>

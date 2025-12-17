@@ -11,6 +11,7 @@ class Task extends Model
         'status',
         'due_date',
         'project_id',
+        'progress'
     ];
 
     protected $casts = [
