@@ -1,66 +1,104 @@
+# Project Manager - Laravel Implementation
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## 🚀 Project Overview
+A Project Management System built with **Laravel 11**. This application manages the relationship between Users and Projects, utilizing a custom Bootstrap frontend for user onboarding and a hardened RESTful API for data management.
+---
 
-## About Laravel
+## 🖥 Web Registration (Bootstrap 5)
+The registration flow is designed to be **session-less** to ensure strict control over user authentication.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+* **URL:** `http://localhost:8000/register`
+* **Role Security:** Every user is automatically assigned the **User Role (ID: 2)** upon creation.
+* **Logic:** Uses a custom `RegisterController` that creates the user in the database but **does not** call `Auth::login()`. 
+* **UX:** After successful registration, users are redirected to the login page with a Bootstrap success alert.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 📂 Project & Task Management
+The system follows a strict hierarchical data model to ensure integrity across the platform:
 
-## Learning Laravel
+1.  **Users:** Serve as the owners of projects.
+2.  **Projects:** Linked to a specific owner; act as containers for tasks.
+3.  **Tasks:** Linked to a parent project; representing individual work units.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## User Delegation
+The application utilizes a **delegation-based architecture** to manage data ownership and organizational hierarchy. This ensures that every project is clearly assigned and managed within the system.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Hierarchy & Delegation Logic
+1.  **User Delegation (Owners):** Users serve as the primary owners of projects. Every project is delegated to a specific User ID, establishing a "One-to-Many" relationship where the owner is responsible for the project's oversight.
+2.  **Project Delegation (Containers):** Projects act as the central management containers. They are linked to their delegated owners and serve as the structural foundation for all tasks and data associations.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 🛰 REST API Documentation
+The API is isolated from the web routes and is protected by **Laravel Sanctum** token-based authentication.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 🔑 Token Creation Scenario (Step-by-Step)
+To access the API endpoints, follow this specific sequence:
 
-### Premium Partners
+1.  **Request:** The client sends a `POST` request to the Login/Token endpoint with valid credentials.
+2.  **Generation:** The server validates the user and generates a plain-text token:
+    ```php
+    $token = $user->createToken('api_token')->plainTextToken;
+    ```
+3.  **Delivery:** The server returns a JSON response containing the `access_token`.
+4.  **Usage:** The client adds this token to the **Authorization Header** for all future requests:
+    `Authorization: Bearer 1|raWv8...your_token_here...`
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
 
-## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### API Endpoints
+All responses are formatted via **Eloquent Resources** to provide clean JSON and hide sensitive database columns.
 
-## Code of Conduct
+| Method | Endpoint | Auth Required | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/projects` | Yes (Bearer) | Lists projects including the Owner's name. |
+| `GET` | `/api/tasks` | Yes (Bearer) | Lists tasks including the Parent Project title. |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-## Security Vulnerabilities
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
+
+# Project Manager - Laravel Implementation
+
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+
+## 🚀 Project Overview
+A Project Management System built with **Laravel 11**. This application manages the relationship between Users and Projects, utilizing a custom Bootstrap frontend for user onboarding and a hardened RESTful API for data management.
+
+---
+
+## 🛠 Setup & Installation Instructions
+
+To get the application running on your local machine, follow these consolidated steps to initialize the environment, database, and assets:
+
+### 1. Project Initialization & Environment Setup
+Execute the following commands in order to install dependencies and configure your system:
+
+```bash
+# Clone the repository and install PHP dependencies
+git clone <your-repo-url>
+cd project-manager
+composer install
+
+# Configure environment and generate app key
+cp .env.example .env
+php artisan key:generate
+
+# IMPORTANT: Update your .env file before proceeding:
+# 1. Set DB_DATABASE to your local database name
+# 2. Set SESSION_DRIVER=file (to avoid session table queries in logs)
+
+# Run database migrations, seed roles, and compile frontend assets
+php artisan migrate --seed
+npm install && npm run dev
+
+# Clear caches and launch the local development server
+php artisan route:clear
+php artisan config:clear
+php artisan serve
 
 ## License
-
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
