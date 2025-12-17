@@ -118,7 +118,11 @@
             <nav class="nav flex-column">
                 <a href="{{ route('dashboard') }}">Home</a>
                 <a href="{{ route('profile') }}">Profile</a>
-                <a href="{{ route('users.index') }}">Manage Users</a>
+                @if(auth()->user()->role === 'admin')
+                <a class="nav-link {{ request()->routeIs('users.index') ? 'active fw-bold' : '' }}" href="{{ route('users.index') }}">
+                    <i class="fas fa-users-cog me-2"></i> Manage Users
+                </a>
+                @endif
                 <a href="{{ route('projects.index') }}">Projects</a>
                 <a href="{{ route('tasks.index') }}">Tasks</a>
                 <form action="{{ route('logout') }}" method="POST" class="mt-2 px-3">
