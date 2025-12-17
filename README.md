@@ -3,8 +3,7 @@
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 ## 🚀 Project Overview
-A Project Management System built with **Laravel 11**. This application manages the relationship between Users, Projects, and Tasks, utilizing a custom Bootstrap frontend for user onboarding and a hardened RESTful API for data management.
-
+A Project Management System built with **Laravel 11**. This application manages the relationship between Users and Projects, utilizing a custom Bootstrap frontend for user onboarding and a hardened RESTful API for data management.
 ---
 
 ## 🖥 Web Registration (Bootstrap 5)
