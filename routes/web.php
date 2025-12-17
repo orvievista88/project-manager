@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\RegisterController;
 use Illuminate\Support\Facades\Route;
 
 // 1. Public / Guest Routes
@@ -59,7 +60,15 @@ Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
 
+
 // 3. Auth Routes (Breeze)
 if (file_exists(__DIR__ . '/auth.php')) {
     require __DIR__ . '/auth.php';
 }
+
+
+// 1. This handles LOADING the page (GET)
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+
+// 2. This handles SUBMITTING the form (POST) - This is the missing piece!
+Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
